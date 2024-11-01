@@ -11,7 +11,10 @@ contract Blog {
         uint256 likes;
         uint256 dislikes;
         bool isTokenized;
+        bool isBanned;
     }
+
+    address owner;
     
     Post[] public posts;
     mapping(address => Post[]) public userPosts;
@@ -19,9 +22,13 @@ contract Blog {
     event PostCreated(uint256 indexed postId, address indexed author);
     event PostUpdated(uint256 indexed postId, address indexed author);
     event PostLikedDisliked(uint256 indexed postId, address indexed user, bool isLike);
+
+    constructor() {
+        owner = msg.sender;
+    }
     
     function createPost(string memory _title, string memory _content) public {
-        Post memory newPost = Post(posts.length, _title, _content, msg.sender, block.timestamp, 0, 0, false);
+        Post memory newPost = Post(posts.length, _title, _content, msg.sender, block.timestamp, 0, 0, false, true);
         posts.push(newPost);
         userPosts[msg.sender].push(newPost);
         emit PostCreated(newPost.id, msg.sender);
@@ -41,6 +48,10 @@ contract Blog {
         emit PostUpdated(_postId, msg.sender);
     }
 
+	function banPost(uint256 _postId) public onlyOwner {
+        posts[_postId].isBanned = true;
+    }
+
 	function likePost(uint256 _postId) public {
         posts[_postId].likes++;
         emit PostLikedDisliked(_postId, msg.sender, true);
@@ -53,6 +64,11 @@ contract Blog {
 
     modifier onlyAuthor(uint256 _postId) {
         require(msg.sender == posts[_postId].author, "Only the author can update the post");
+        _;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner can update the post");
         _;
     }
 }

@@ -113,6 +113,21 @@ describe("Blog Contract", function () {
         });
     });
 
+    describe("Ban posts", function(){
+        it("It should ban post", async function () {
+            const { blog } = await loadFixture(deployBlogFixture);
+            await blog.createPost("First Post", "Content");
+            await blog.banPost(0);
+            const post = await blog.getPost(0);
+            expect(post.isBanned).to.be.true;
+        })
+        it("It should revert banPost call", async function () {
+            const { blog, addr1 } = await loadFixture(deployBlogFixture);
+            await blog.createPost("First Post", "Content");
+            await expect(blog.connect(addr1).banPost(0)).to.be.revertedWith("Only owner can update the post")
+        })
+    })
+
     describe("Post Liking and Disliking", function () {
         it("Should increment likes on likePost", async function () {
             const { blog } = await loadFixture(deployBlogFixture);
