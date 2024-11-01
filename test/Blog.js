@@ -124,7 +124,9 @@ describe("Blog Contract", function () {
         it("It should revert banPost call", async function () {
             const { blog, addr1 } = await loadFixture(deployBlogFixture);
             await blog.createPost("First Post", "Content");
-            await expect(blog.connect(addr1).banPost(0)).to.be.revertedWith("Only owner can update the post")
+            await expect(blog.connect(addr1).banPost(0))
+                .to.be.revertedWithCustomError(blog, "OwnableUnauthorizedAccount")
+                .withArgs(addr1)
         })
     })
 

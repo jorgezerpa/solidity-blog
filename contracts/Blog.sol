@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.27;
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Blog {
+contract Blog is Ownable {
     struct Post {
         uint256 id;
         string title;
@@ -13,8 +14,6 @@ contract Blog {
         bool isTokenized;
         bool isBanned;
     }
-
-    address owner;
     
     Post[] public posts;
     mapping(address => Post[]) public userPosts;
@@ -23,8 +22,8 @@ contract Blog {
     event PostUpdated(uint256 indexed postId, address indexed author);
     event PostLikedDisliked(uint256 indexed postId, address indexed user, bool isLike);
 
-    constructor() {
-        owner = msg.sender;
+    constructor() Ownable(msg.sender) {
+       
     }
     
     function createPost(string memory _title, string memory _content) public {
@@ -64,11 +63,6 @@ contract Blog {
 
     modifier onlyAuthor(uint256 _postId) {
         require(msg.sender == posts[_postId].author, "Only the author can update the post");
-        _;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Only owner can update the post");
         _;
     }
 }
