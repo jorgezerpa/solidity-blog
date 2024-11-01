@@ -35,8 +35,7 @@ contract Blog {
         return posts;
     }
     
-		function updatePost(uint256 _postId, string memory _newTitle, string memory _newContent) public {
-        require(msg.sender == posts[_postId].author, "Only the author can update the post");
+	function updatePost(uint256 _postId, string memory _newTitle, string memory _newContent) public onlyAuthor(_postId) {
         posts[_postId].title = _newTitle;
         posts[_postId].content = _newContent;
         emit PostUpdated(_postId, msg.sender);
@@ -50,5 +49,10 @@ contract Blog {
     function dislikePost(uint256 _postId) public {
         posts[_postId].dislikes++;
         emit PostLikedDisliked(_postId, msg.sender, false);
+    }
+
+    modifier onlyAuthor(uint256 _postId) {
+        require(msg.sender == posts[_postId].author, "Only the author can update the post");
+        _;
     }
 }
