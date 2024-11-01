@@ -59,6 +59,12 @@ describe("Blog Contract", function () {
             expect(post.content).to.equal(markdownPost);
             expect(post.author).to.equal(owner.address);
         });
+        it("Should emit PostCreated event", async function () {
+            const { blog, owner } = await loadFixture(deployBlogFixture);
+            await expect(blog.createPost("Post title", "Content"))
+                .to.emit(blog, "PostCreated")
+                .withArgs(0, owner.address);
+        });
     });
 
     describe("Post Retrieval", function () {
@@ -91,6 +97,14 @@ describe("Blog Contract", function () {
             expect(post.content).to.equal("Updated Content");
         });
 
+        it("Should emit postUpdated event", async function () {
+            const { blog, owner } = await loadFixture(deployBlogFixture);
+            await blog.createPost("First Post", "Content");
+            await expect(blog.updatePost(0, "Updated Title", "Updated Content"))
+                .to.emit(blog, "PostUpdated")
+                .withArgs(0, owner.address);
+        });
+
         it("Should revert if a non-author tries to update the post", async function () {
             const { blog, addr1 } = await loadFixture(deployBlogFixture);
             await blog.createPost("First Post", "Content");
@@ -108,12 +122,28 @@ describe("Blog Contract", function () {
             expect(post.likes).to.equal(1);
         });
 
+        it("Should emit PostLikedDislikedEvent", async function () {
+            const { blog, owner } = await loadFixture(deployBlogFixture);
+            await blog.createPost("First Post", "Content");
+            await expect(blog.likePost(0))
+                .to.emit(blog, "PostLikedDisliked")
+                .withArgs(0, owner.address, true);
+        });
+
         it("Should increment dislikes on dislikePost", async function () {
             const { blog } = await loadFixture(deployBlogFixture);
             await blog.createPost("First Post", "Content");
             await blog.dislikePost(0);
             const post = await blog.getPost(0);
             expect(post.dislikes).to.equal(1);
+        });
+
+        it("Should emit PostLikedDislikedEvent", async function () {
+            const { blog, owner } = await loadFixture(deployBlogFixture);
+            await blog.createPost("First Post", "Content");
+            await expect(blog.dislikePost(0))
+                .to.emit(blog, "PostLikedDisliked")
+                .withArgs(0, owner.address, false);
         });
   });
 });
